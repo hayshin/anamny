@@ -18,6 +18,14 @@ A full-stack health tracking application built with FastAPI (backend) and Expo R
 - Node.js 18+ (for local development)
 - Python 3.11+ (for local development)
 
+### Clone repo
+
+
+```bash
+git clone --recurse-submodules https://github.com/hayshin/anamny.git
+cd anamny
+```
+
 ### Running with Docker
 
 The project consists of two separate Docker Compose setups:
