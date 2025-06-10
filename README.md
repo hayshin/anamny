@@ -1,4 +1,45 @@
-# TODO.md for Anamny - Health Tracker App (Expo + FastAPI)
+# Anamny Health Tracker
+
+A full-stack health tracking application built with FastAPI (backend) and Expo React Native (frontend).
+
+## Architecture
+
+- **Frontend**: Expo React Native (Web/iOS/Android)  
+- **Backend**: FastAPI with PostgreSQL
+- **Authentication**: JWT with secure token storage
+- **Database**: PostgreSQL with Alembic migrations
+
+## Quick Start with Docker
+
+### Prerequisites
+- Docker and Docker Compose installed
+
+### 1. Start All Services
+
+```bash
+# Start all services (database, backend, frontend)
+docker-compose up --build
+```
+
+This will start:
+- **PostgreSQL Database**: `localhost:5432`
+- **FastAPI Backend**: `http://localhost:8000`
+- **Expo Frontend**: `http://localhost:8081`
+
+### 2. Access the Application
+
+- **Web App**: Open `http://localhost:8081` in your browser
+- **API Documentation**: Open `http://localhost:8000/docs` for Swagger UI
+
+## Features Implemented
+
+### ✅ Authentication & User Management
+- User registration and login
+- JWT token authentication  
+- Secure token storage
+- Profile management (name, age, gender, blood type)
+
+### 🚧 Coming Soon (from original TODO)
 
 ## Tech Stack Summary
 - Frontend: Expo (React Native), TypeScript
