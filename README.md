@@ -1,166 +1,159 @@
 # Anamny Health Tracker
 
-A full-stack health tracking application built with FastAPI (backend) and Expo React Native (frontend).
+A full-stack health tracking application built with FastAPI (backend) and Expo React Native (frontend), containerized with Docker.
 
-## Architecture
+## 🏗️ Architecture
 
-- **Frontend**: Expo React Native (Web/iOS/Android)  
-- **Backend**: FastAPI with PostgreSQL
-- **Authentication**: JWT with secure token storage
-- **Database**: PostgreSQL with Alembic migrations
+- **Backend**: FastAPI + PostgreSQL + Alembic (Database Migrations)
+- **Frontend**: Expo React Native (Web/Mobile)
+- **Database**: PostgreSQL 15
+- **Authentication**: JWT tokens with secure storage
+- **Containerization**: Docker & Docker Compose
 
-## Quick Start with Docker
+## 🚀 Quick Start
 
 ### Prerequisites
-- Docker and Docker Compose installed
 
-### 1. Start All Services
+- Docker and Docker Compose installed
+- Node.js 18+ (for local development)
+- Python 3.11+ (for local development)
+
+### Running with Docker
+
+The project consists of two separate Docker Compose setups:
+
+#### 1. Backend + Database (Server)
 
 ```bash
-# Start all services (database, backend, frontend)
-docker-compose up --build
+# Navigate to server directory
+cd server
+
+# Start backend services
+docker compose up --build
+
+# This will start:
+# - PostgreSQL database on localhost:5432
+# - FastAPI backend on localhost:8000
 ```
 
-This will start:
-- **PostgreSQL Database**: `localhost:5432`
-- **FastAPI Backend**: `http://localhost:8000`
-- **Expo Frontend**: `http://localhost:8081`
+#### 2. Frontend (Client)
 
-### 2. Access the Application
+```bash
+# Navigate to client directory  
+cd client
 
-- **Web App**: Open `http://localhost:8081` in your browser
-- **API Documentation**: Open `http://localhost:8000/docs` for Swagger UI
+# Start frontend service
+docker compose up --build
 
-## Features Implemented
+# This will start:
+# - Expo development server on localhost:8081
+```
 
-### ✅ Authentication & User Management
-- User registration and login
-- JWT token authentication  
-- Secure token storage
-- Profile management (name, age, gender, blood type)
+### Accessing the Application
 
-### 🚧 Coming Soon (from original TODO)
+- **Frontend Web**: http://localhost:8081
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs (Swagger UI)
+- **Database**: localhost:5432 (PostgreSQL)
 
-## Tech Stack Summary
-- Frontend: Expo (React Native), TypeScript
-- Backend: FastAPI (Python), PostgreSQL
-- Auth: JWT + OAuth2 (optional Google/Apple login later)
-- File Storage: S3/Backblaze (second is more preferrable, but for compability we will use S3 API)
-- AI: Use [Agent Development Kit](https://github.com/google/adk-python/) with Gemini API
+## 🎯 What We've Implemented
 
-## Core Features
+### ✅ Completed Features
 
-### 1. Authentication & User Management
-#### Backend (FastAPI)
-- [ ] JWT Authentication
-  - `/auth/register` (email, password, username)
-  - `/auth/login` (email, password → returns JWT)
-  - `/auth/forgot-password` (email → sends reset link)
-  - `/auth/reset-password` (token, new password)
-- [ ] User Profile Endpoints
-  - `GET /profile` (fetch user data)
-  - `PATCH /profile` (update name, age, gender, blood type)
+#### 🔐 Authentication & User Management
+- [x] **User Registration**: Create new accounts with email/password
+- [x] **User Login**: JWT-based authentication
+- [x] **Password Security**: Bcrypt hashing for password storage
+- [x] **Token Management**: JWT tokens with secure storage (SecureStore on mobile, localStorage on web)
+- [x] **Protected Routes**: Authentication guards for sensitive pages
+- [x] **User Profile**: View and update personal information (name, age, gender, blood type)
+- [x] **Logout Functionality**: Secure session termination
 
-#### Frontend (Expo - React Native)
-- [ ] Screens
-  - Sign Up / Login (form validation)
-  - Forgot Password flow
-  - Profile Settings
-- [ ] State Management
-  - Store JWT in secure storage (Expo SecureStore)
-  - Context/Redux for user session
+#### 🛡️ Security Features
+- [x] **Secured Endpoints**: JWT token validation for protected routes
+- [x] **CORS Configuration**: Proper cross-origin resource sharing setup
+- [x] **Input Validation**: Pydantic schemas for request/response validation
+- [x] **Environment Variables**: Secure configuration management
+- [x] **Password Reset Tokens**: Database schema ready (implementation pending)
 
----
+#### 🗄️ Database & Backend
+- [x] **PostgreSQL Database**: Fully containerized database setup
+- [x] **Database Migrations**: Alembic for schema version control
+- [x] **FastAPI Backend**: RESTful API with automatic documentation
+- [x] **SQLAlchemy ORM**: Type-safe database operations
+- [x] **Database Models**: User and PasswordResetToken tables
+- [x] **CRUD Operations**: Complete user management API
+- [x] **Health Check Endpoints**: Database connectivity monitoring
 
-### 2. AI Chat & Symptom Analysis
-#### Backend (FastAPI + AI Integration)
-- [ ] Chat Endpoints
-  - `POST /chat/send` (user message → AI response)
-  - `GET /chat/history` (fetch past conversations)
-- [ ] AI Suggestions
-  - Integrate OpenAI API (GPT-4/MedPaLM if available)
-  - Cache common symptom-diagnosis pairs
+#### 📱 Frontend & UX
+- [x] **Expo React Native**: Cross-platform mobile/web application
+- [x] **Modern UI Design**: Clean, healthcare-themed interface
+- [x] **Responsive Layout**: Works on web, iOS, and Android
+- [x] **Form Validation**: Client-side input validation with react-hook-form
+- [x] **Navigation**: Tab-based navigation (Home, Chat, Profile)
+- [x] **State Management**: React Context for global authentication state
+- [x] **Error Handling**: User-friendly error messages and loading states
+- [x] **Secure Storage**: Platform-appropriate token storage
 
-#### Frontend (Expo - React Native)
-- [ ] UI Components
-  - Chat interface (message bubbles, typing indicator)
-  - Suggested quick-reply buttons (e.g., "Headache," "Fever")
-  - Loading state for AI response
-- [ ] State Management
-  - Store chat history locally (SQLite or AsyncStorage)
+#### 🐳 DevOps & Infrastructure
+- [x] **Docker Containerization**: Both frontend and backend containerized
+- [x] **Docker Compose**: Multi-service orchestration
+- [x] **Environment Configuration**: Separate configs for development/production
+- [x] **Database Persistence**: PostgreSQL data volumes
+- [x] **Hot Reload**: Development-friendly auto-reload
+- [x] **Health Checks**: Container health monitoring
 
----
+### 🚧 Not Yet Implemented
 
-### 3. Medical Records Management
-#### Backend (FastAPI + File Storage)
-- [ ] File Upload Endpoints
-  - `POST /records/upload` (PDF/image → store in S3/Backblaze)
-  - `GET /records` (list all user records)
-  - `DELETE /records/{id}`
-- [ ] OCR Processing
-  - Use Tesseract.js or Google Vision API for text extraction
+#### CI/CD Pipeline
+- [ ] **GitHub Actions**: Automated testing and deployment
+- [ ] **Automated Testing**: Unit and integration tests
+- [ ] **Production Deployment**: Cloud deployment configuration
 
-#### Frontend (Expo - React Native)
-- [ ] UI Components
-  - File/image upload (Expo ImagePicker/DocumentPicker)
-  - Gallery view of medical records
-  - Search/filter by date, type
-  - Text extraction preview
+#### Advanced Features
+- [ ] **Password Reset Email**: Email-based password recovery
+- [ ] **Health Data Tracking**: Core health metrics functionality
+- [ ] **Data Visualization**: Charts and graphs for health data
+- [ ] **Social Features**: Chat functionality (UI ready, backend pending)
 
----
+## 📂 Project Structure
 
-### 4. Health Tracking & Reminders
-#### Backend (FastAPI)
-- [ ] Reminder Endpoints
-  - `POST /reminders` (medication/appointment)
-  - `GET /reminders` (upcoming reminders)
-  - `DELETE /reminders/{id}`
+```
+anamny/
+├── server/                     # FastAPI Backend
+│   ├── src/
+│   │   ├── auth/              # Authentication module
+│   │   │   ├── api.py         # Auth endpoints
+│   │   │   ├── models.py      # User models
+│   │   │   ├── schemas.py     # Pydantic schemas
+│   │   │   └── utils.py       # Auth utilities
+│   │   ├── database.py        # Database configuration
+│   │   ├── config.py          # Settings management
+│   │   └── main.py           # FastAPI application
+│   ├── alembic/              # Database migrations
+│   ├── docker-compose.yml    # Backend services
+│   ├── Dockerfile            # Backend container
+│   └── requirements.txt      # Python dependencies
+├── client/                    # Expo React Native Frontend
+│   ├── app/                   # App routes and screens
+│   │   ├── (tabs)/           # Tab navigation screens
+│   │   ├── auth/             # Authentication screens
+│   │   └── _layout.tsx       # Root layout
+│   ├── contexts/             # React contexts
+│   ├── services/             # API services
+│   ├── docker-compose.yml    # Frontend services
+│   ├── Dockerfile            # Frontend container
+│   └── package.json          # Node.js dependencies
+└── README.md                 # This file
+```
 
-#### Frontend (Expo - React Native)
-- [ ] UI Components
-  - Add/edit reminders (datetime picker)
-  - Push notifications (Expo Notifications)
-  - Calendar view for appointments
+## 📊 API Endpoints
 
----
+### Authentication
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `GET /auth/profile` - Get user profile (protected)
+- `PUT /auth/profile` - Update user profile (protected)
 
-## UI/UX Tasks (Expo - React Native)
-### General
-- [ ] Theme & Styling
-  - Consistent color scheme (healthcare blues/whites)
-  - Custom fonts (e.g., Inter or SF Pro)
-- [ ] Navigation
-  - Tab-based (Home, Chat, Records, Profile)
-  - Stack navigation for auth flow
-- [ ] Animations
-  - Smooth transitions between screens
-  - Loading spinners/Skeleton placeholders
-
-### Screens
-- [ ] Onboarding (brief app intro)
-- [ ] Dashboard (summary of recent records, AI suggestions)
-- [ ] Chat Screen (message list, input bar with attachment option)
-- [ ] Records Gallery (thumbnails, search bar)
-- [ ] Reminders List (grouped by date)
-
----
-
-## Security & Compliance
-- [ ] Backend
-  - Rate-limiting on auth endpoints
-  - JWT expiration (short-lived access token + refresh token)
-- [ ] Frontend
-  - Encrypted storage for sensitive data
-  - Biometric auth (FaceID/TouchID)
-
----
-
-## Future Considerations
-- Telemedicine API (Zoom/Google Meet integration)
-- Wearable Sync (Apple Health/Google Fit)
-- Multi-language Support (i18n)
-
----
-
-
-Would you like me to break down any section further (e.g., specific API schemas or Expo package recommendations)?
+### Health Check
+- `GET /` - API health check
