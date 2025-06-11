@@ -95,6 +95,7 @@ services:
       - /app/node_modules # Prevent overwriting node_modules inside container
     environment:
       - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+      - EXPO_PUBLIC_API_URL=http://localhost:8000
     stdin_open: true
     tty: true
     depends_on:
