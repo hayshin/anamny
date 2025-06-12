@@ -24,7 +24,7 @@ jobs:
           cd /opt/anamny 
           
           # Pull latest code and deploy
-          git pull --recurse-submodules origin master
+          git pull 
 
           docker compose -f docker-compose.prod.yml down
 
