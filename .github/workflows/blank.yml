@@ -1,0 +1,33 @@
+name: Simple Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to Digital Ocean
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.DO_HOST }}
+        username: ${{ secrets.DO_USERNAME }}
+        key: ${{ secrets.DO_SSH_KEY }}
+        script: |
+          # Set environment variables
+          export GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+          export SECRET_KEY="${{ secrets.SECRET_KEY }}"
+          export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+          
+          cd /opt/anamny 
+          
+          # Pull latest code and deploy
+          git pull origin main
+          docker compose -f docker-compose.prod.yml up -d --build
+          
+          # Run migrations
+          docker compose -f docker-compose.prod.yml exec -T server alembic upgrade head
+          
+          echo "✅ Deployment complete!"
