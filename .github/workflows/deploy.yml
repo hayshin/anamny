@@ -1,4 +1,4 @@
-name: Simple Deploy
+name: Simple Deploy Bl
 
 on:
   push:
