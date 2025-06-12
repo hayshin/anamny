@@ -24,12 +24,9 @@ A full-stack health tracking application built with FastAPI (backend) and Expo R
 
 Before running the application, you need to set up your environment variables:
 
-1. **Backend Environment**: Create a `.env` file in the `server/` directory:
+1. **Root Environment**: Create a `.env` file in the root directory:
 
 ```bash
-# Navigate to server directory
-cd server
-
 # Create .env file with your Gemini API key
 echo "GEMINI_API_KEY=your_gemini_api_key_here" > .env
 ```
@@ -46,7 +43,23 @@ cd anamny
 
 ### Running with Docker
 
-The project consists of two separate Docker Compose setups:
+**Single Command Setup**: Run all services (backend, frontend, database) from the root directory:
+
+```bash
+# Start all services
+docker compose up --build
+
+# This will start:
+# - PostgreSQL database on localhost:5432
+# - FastAPI backend on localhost:8000  
+# - Expo frontend on localhost:8081
+# - Redis for background tasks
+# - Celery workers for async processing
+```
+
+**Alternative: Individual Service Setup**
+
+If you prefer to run services separately:
 
 #### 1. Backend + Database (Server)
 
@@ -170,6 +183,8 @@ docker compose up --build
 
 ```
 anamny/
+├── docker-compose.yml          # Root orchestration (all services)
+├── .env                        # Environment variables (create this!)
 ├── server/                     # FastAPI Backend
 │   ├── src/
 │   │   ├── auth/              # Authentication module
@@ -186,10 +201,9 @@ anamny/
 │   │   ├── config.py          # Settings management
 │   │   └── main.py           # FastAPI application
 │   ├── alembic/              # Database migrations
-│   ├── docker-compose.yml    # Backend services
+│   ├── docker-compose.yml    # Backend services (alternative)
 │   ├── Dockerfile            # Backend container
-│   ├── requirements.txt      # Python dependencies
-│   └── .env                  # Environment variables (create this!)
+│   └── requirements.txt      # Python dependencies
 ├── client/                    # Expo React Native Frontend
 │   ├── app/                   # App routes and screens
 │   │   ├── (tabs)/           # Tab navigation screens
