@@ -52,7 +52,7 @@ Go to your GitHub repository → Settings → Secrets and variables → Actions,
 
 3. **Download and run the deployment script:**
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/hayshin/anamny/main/scripts/deploy-digitalocean.sh -o deploy.sh
+   curl -fsSL https://github.com/hayshin/anamny/main/scripts/deploy-digitalocean.sh -o deploy.sh
    chmod +x deploy.sh
    sudo ./deploy.sh
    ```
