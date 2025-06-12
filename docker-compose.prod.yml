@@ -75,7 +75,6 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - ENVIRONMENT=production
     depends_on:
       - postgres
       - redis
@@ -90,7 +89,6 @@ services:
     container_name: anamny_client_prod
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
       - EXPO_PUBLIC_API_URL=${API_URL:-http://localhost:8000}
     ports:
       - "8081:8081"
