@@ -97,6 +97,7 @@ services:
     environment:
       - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
       - EXPO_PUBLIC_API_URL=http://localhost:8000
+      - METRO_WATCHER_TYPE=none
     stdin_open: true
     tty: true
     depends_on:
