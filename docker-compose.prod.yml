@@ -66,7 +66,6 @@ services:
   celery:
     build:
       context: ./server
-      dockerfile: Dockerfile.prod
     container_name: anamny_celery_prod
     restart: unless-stopped
     command: celery -A src.celery worker --loglevel=info
@@ -94,7 +93,7 @@ services:
       - NODE_ENV=production
       - EXPO_PUBLIC_API_URL=${API_URL:-http://localhost:8000}
     ports:
-      - "3000:3000"
+      - "8081:8081"
     depends_on:
       - server
     networks:
