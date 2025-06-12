@@ -1,6 +1,7 @@
 # Anamny Health Tracker
 
 A full-stack health tracking application built with FastAPI (backend) and Expo React Native (frontend), containerized with Docker.
+P.S. сайт будет долго грузиться, и после регистрации надо перелогиниться.
 
 ## 🏗️ Architecture
 
@@ -159,6 +160,12 @@ docker compose up --build
 - [x] **Hot Reload**: Development-friendly auto-reload
 - [x] **Health Checks**: Container health monitoring
 
+#### CI/CD Pipeline
+- [X] **GitHub Actions**: Automated testing and deployment
+- [X] **Automated Testing**: Unit and integration tests
+- [X] **Production Deployment**: Cloud deployment configuration
+
+
 ### 🚧 Not Yet Implemented
 
 #### Advanced Health Features
@@ -173,11 +180,6 @@ docker compose up --build
 - [ ] **Image Analysis**: AI analysis of medical images/photos
 - [ ] **Symptom Tracking**: Historical symptom analysis and patterns
 - [ ] **Health Insights**: Personalized health recommendations
-
-#### CI/CD Pipeline
-- [ ] **GitHub Actions**: Automated testing and deployment
-- [ ] **Automated Testing**: Unit and integration tests
-- [ ] **Production Deployment**: Cloud deployment configuration
 
 #### Advanced Features
 - [ ] **Password Reset Email**: Email-based password recovery
