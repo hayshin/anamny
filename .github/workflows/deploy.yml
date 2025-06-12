@@ -31,3 +31,31 @@ jobs:
           docker compose -f docker-compose.prod.yml exec -T server alembic upgrade head
           
           echo "✅ Deployment complete!"
+
+name: Test Secrets
+
+on:
+  workflow_dispatch  # Manual trigger
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Test DO_HOST
+      run: |
+        if [ -z "${{ secrets.DO_HOST }}" ]; then
+          echo "❌ DO_HOST is empty"
+          exit 1
+        else
+          echo "✅ DO_HOST is set"
+        fi
+    
+    - name: Test SSH Connection
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.DO_HOST }}
+        username: ${{ secrets.DO_USERNAME }}
+        key: ${{ secrets.DO_SSH_KEY }}
+        script: |
+          echo "✅ SSH connection successful!"
+          pwd
