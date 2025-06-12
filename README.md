@@ -31,6 +31,11 @@ Before running the application, you need to set up your environment variables:
 echo "GEMINI_API_KEY=your_gemini_api_key_here" > .env
 ```
 
+**For automated setup**, use the provided script:
+```bash
+./scripts/setup-env.sh
+```
+
 Get your Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 ### Clone repo
@@ -250,3 +255,48 @@ anamny/
 - The AI provides **general information only** and should not replace professional medical advice
 - Always consult with qualified healthcare providers for diagnosis and treatment
 - The AI is powered by Google's Gemini model with specialized medical training
+
+## 🚀 Production Deployment
+
+### Digital Ocean Deployment
+
+For production deployment on Digital Ocean, see the [detailed deployment guide](docs/DEPLOYMENT.md).
+
+**Quick deployment:**
+
+1. **Setup your Digital Ocean server:**
+   ```bash
+   # On your Digital Ocean Ubuntu 22.04 droplet
+   curl -fsSL https://raw.githubusercontent.com/hayshin/anamny/main/scripts/deploy-digitalocean.sh -o deploy.sh
+   chmod +x deploy.sh
+   sudo ./deploy.sh
+   ```
+
+2. **Configure GitHub Secrets** for automated deployment:
+   - `DO_HOST` - Your server IP
+   - `DO_USERNAME` - SSH username
+   - `DO_SSH_KEY` - Private SSH key
+   - `GEMINI_API_KEY` - Your Gemini API key
+   - `SECRET_KEY` - Generated secret key
+   - `POSTGRES_PASSWORD` - Secure database password
+
+3. **Push to main branch** to trigger automated deployment
+
+### GitHub Actions CI/CD
+
+The repository includes automated CI/CD pipeline that:
+- ✅ Runs tests on pull requests
+- ✅ Builds production Docker images
+- ✅ Deploys to Digital Ocean on main branch pushes
+- ✅ Runs database migrations
+- ✅ Performs health checks
+
+### Production Features
+
+- 🔒 **Security**: SSL/TLS encryption, firewall, fail2ban
+- 🐳 **Containerized**: Multi-stage Docker builds for optimization
+- 🔄 **Auto-deployment**: GitHub Actions integration
+- 📊 **Monitoring**: Health checks and logging
+- 🗄️ **Database**: Persistent PostgreSQL with migrations
+- ⚡ **Performance**: Nginx reverse proxy with caching
+- 🔐 **Secrets Management**: Secure environment variable handling

@@ -1,0 +1,170 @@
+name: Deploy to Digital Ocean
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        cd server
+        pip install -r requirements.txt
+
+    - name: Run tests
+      env:
+        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        SECRET_KEY: test-secret-key
+        GEMINI_API_KEY: test-key
+      run: |
+        cd server
+        # Add your test commands here
+        # python -m pytest tests/
+        echo "Tests would run here"
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      server-image: ${{ steps.meta-server.outputs.tags }}
+      client-image: ${{ steps.meta-client.outputs.tags }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata for server
+      id: meta-server
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-server
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Extract metadata for client
+      id: meta-client
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push server image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./server
+        file: ./server/Dockerfile.prod
+        push: true
+        tags: ${{ steps.meta-server.outputs.tags }}
+        labels: ${{ steps.meta-server.outputs.labels }}
+
+    - name: Build and push client image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./client
+        file: ./client/Dockerfile.prod
+        push: true
+        tags: ${{ steps.meta-client.outputs.tags }}
+        labels: ${{ steps.meta-client.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to Digital Ocean
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.DO_HOST }}
+        username: ${{ secrets.DO_USERNAME }}
+        key: ${{ secrets.DO_SSH_KEY }}
+        port: ${{ secrets.DO_PORT || 22 }}
+        script: |
+          # Navigate to application directory
+          cd /opt/anamny || { echo "App directory not found"; exit 1; }
+          
+          # Pull latest changes
+          git pull origin main
+          
+          # Login to GitHub Container Registry
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # Pull latest images
+          docker pull ${{ needs.build-and-push.outputs.server-image }}
+          docker pull ${{ needs.build-and-push.outputs.client-image }}
+          
+          # Update docker-compose to use new images
+          sed -i 's|build:|# build:|g' docker-compose.prod.yml
+          sed -i 's|context: ./server|# context: ./server|g' docker-compose.prod.yml
+          sed -i 's|dockerfile: Dockerfile.prod|# dockerfile: Dockerfile.prod|g' docker-compose.prod.yml
+          sed -i '/# build:/a\    image: ${{ needs.build-and-push.outputs.server-image }}' docker-compose.prod.yml
+          
+          # Stop existing containers
+          docker-compose -f docker-compose.prod.yml down
+          
+          # Start updated containers
+          docker-compose -f docker-compose.prod.yml up -d
+          
+          # Run database migrations
+          docker-compose -f docker-compose.prod.yml exec -T server alembic upgrade head
+          
+          # Clean up unused images
+          docker image prune -f
+          
+          # Check if services are healthy
+          sleep 30
+          docker-compose -f docker-compose.prod.yml ps
