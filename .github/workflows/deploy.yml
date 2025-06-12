@@ -133,7 +133,14 @@ jobs:
         username: ${{ secrets.DO_USERNAME }}
         key: ${{ secrets.DO_SSH_KEY }}
         port: ${{ secrets.DO_PORT || 22 }}
+        envs: GEMINI_API_KEY,SECRET_KEY,POSTGRES_PASSWORD,DATABASE_URL
         script: |
+          # Set environment variables from GitHub Secrets
+          export GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+          export SECRET_KEY="${{ secrets.SECRET_KEY }}"
+          export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
+          export DATABASE_URL="postgresql://anamny_user:${POSTGRES_PASSWORD}@db:5432/anamny_db"
+          
           # Navigate to application directory
           cd /opt/anamny || { echo "App directory not found"; exit 1; }
           
@@ -147,24 +154,11 @@ jobs:
           docker pull ${{ needs.build-and-push.outputs.server-image }}
           docker pull ${{ needs.build-and-push.outputs.client-image }}
           
-          # Update docker-compose to use new images
-          sed -i 's|build:|# build:|g' docker-compose.prod.yml
-          sed -i 's|context: ./server|# context: ./server|g' docker-compose.prod.yml
-          sed -i 's|dockerfile: Dockerfile.prod|# dockerfile: Dockerfile.prod|g' docker-compose.prod.yml
-          sed -i '/# build:/a\    image: ${{ needs.build-and-push.outputs.server-image }}' docker-compose.prod.yml
-          
           # Stop existing containers
-          docker-compose -f docker-compose.prod.yml down
+          docker compose -f docker-compose.prod.yml down
           
-          # Start updated containers
-          docker-compose -f docker-compose.prod.yml up -d
+          # Start updated containers with environment variables
+          docker compose -f docker-compose.prod.yml up -d
           
           # Run database migrations
-          docker-compose -f docker-compose.prod.yml exec -T server alembic upgrade head
-          
-          # Clean up unused images
-          docker image prune -f
-          
-          # Check if services are healthy
-          sleep 30
-          docker-compose -f docker-compose.prod.yml ps
+          docker compose -f docker-compose.prod.yml exec -T server alembic upgrade head

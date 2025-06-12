@@ -1,124 +1,35 @@
 version: '3.8'
 
 services:
-  postgres:
+  db:
     image: postgres:15
-    container_name: anamny_postgres_prod
-    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-anamny_db}
-      POSTGRES_USER: ${POSTGRES_USER:-anamny_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      - POSTGRES_USER=anamny_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  # From GitHub Secret
+      - POSTGRES_DB=anamny_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     networks:
-      - anamny_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-anamny_user} -d ${POSTGRES_DB:-anamny_db}"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  redis:
-    image: redis:7-alpine
-    container_name: anamny_redis_prod
+      - app-network
     restart: unless-stopped
-    ports:
-      - "6379:6379"
-    networks:
-      - anamny_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile.prod
-    container_name: anamny_server_prod
-    restart: unless-stopped
+    image: ghcr.io/hayshin/anamny-server:latest
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-anamny_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-anamny_db}
-      - SECRET_KEY=${SECRET_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - ENVIRONMENT=production
-    ports:
-      - "8000:8000"
+      - DATABASE_URL=${DATABASE_URL}  # From GitHub Secret
+      - SECRET_KEY=${SECRET_KEY}      # From GitHub Secret
+      - GEMINI_API_KEY=${GEMINI_API_KEY}  # From GitHub Secret
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
     networks:
-      - anamny_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  celery:
-    build:
-      context: ./server
-      dockerfile: Dockerfile.prod
-    container_name: anamny_celery_prod
+      - app-network
     restart: unless-stopped
-    command: celery -A src.celery worker --loglevel=info
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-anamny_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-anamny_db}
-      - SECRET_KEY=${SECRET_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - ENVIRONMENT=production
-    depends_on:
-      - postgres
-      - redis
-      - server
-    networks:
-      - anamny_network
-
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile.prod
-    container_name: anamny_client_prod
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-      - EXPO_PUBLIC_API_URL=${API_URL:-http://localhost:8000}
-    ports:
-      - "3000:3000"
-    depends_on:
-      - server
-    networks:
-      - anamny_network
-
-  nginx:
-    image: nginx:alpine
-    container_name: anamny_nginx_prod
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - server
-      - client
-    networks:
-      - anamny_network
 
 volumes:
   postgres_data:
 
 networks:
-  anamny_network:
+  app-network:
     driver: bridge
