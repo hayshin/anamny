@@ -21,8 +21,7 @@ jobs:
           export SECRET_KEY="${{ secrets.SECRET_KEY }}"
           export POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"
           
-          # Navigate to app directory
-          cd /opt/anamny
+          cd /opt/anamny 
           
           # Pull latest code and deploy
           git pull origin main
